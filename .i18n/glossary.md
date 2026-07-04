@@ -29,6 +29,10 @@
 | triage | トリアージ |
 | prompt | プロンプト |
 | slide deck | スライド（デッキ） |
+| Know your unknowns | 自分の未知を知る（`unknowns/` 全ページ共通のタグライン。表記統一） |
+| Pre-implementation | 実装前 |
+| During implementation | 実装中 |
+| Post-implementation | 実装後 |
 
 ## 原文維持ルール（訳さない）
 
