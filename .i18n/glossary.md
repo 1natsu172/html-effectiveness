@@ -29,7 +29,8 @@
 | triage | トリアージ |
 | prompt | プロンプト |
 | slide deck | スライド（デッキ） |
-| Know your unknowns | 自分の未知を知る（`unknowns/` 全ページ共通のタグライン。表記統一） |
+| Know your unknowns | わからないことを知る（`unknowns/` 全ページ共通のタグライン。表記統一。※ラムズフェルドの「既知/未知」四象限や「未知の未知」＝unknown unknowns 等の概念語は別途「未知」のまま維持） |
+| Why it bites | どこでハマるか（ブラインドスポットの落とし穴ラベル） |
 | Pre-implementation | 実装前 |
 | During implementation | 実装中 |
 | Post-implementation | 実装後 |

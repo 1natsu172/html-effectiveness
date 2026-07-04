@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ブラインドスポット確認 — 自分の未知を知る</title>
+<title>ブラインドスポット確認 — わからないことを知る</title>
 <style>
   :root {
     --ivory:  #FAF9F5;
@@ -442,7 +442,7 @@
 
   <header class="page-head">
     <div class="head-row">
-      <div class="eyebrow">自分の未知を知る · 実装前</div>
+      <div class="eyebrow">わからないことを知る · 実装前</div>
       <a class="back" href="index.html">&larr; すべての例</a>
     </div>
     <h1>ブラインドスポット確認</h1>
@@ -472,7 +472,7 @@
       <div class="vs-grid">
         <div class="vs-cell">
           <div class="vs-tag">あなたが依頼したこと</div>
-          <p>「新しいSSOプロバイダを追加する」。これはこう聞こえます。インターフェースを実装し、登録し、リダイレクトハンドラを書けば完了、と。きれいなコードベースなら2日で終わる作業です。</p>
+          <p>「新しいSSOプロバイダを追加する」——そう言われると、インターフェースを実装して登録し、リダイレクトハンドラを書けば完了、というくらいの作業に聞こえます。きれいなコードベースなら2日仕事でしょう。</p>
         </div>
         <div class="vs-cell actual">
           <div class="vs-tag">実際に足を踏み入れる先</div>
@@ -497,7 +497,7 @@
           <h3 class="bs-title">セッションは二重に書き込まれる。最初に見つかるRedisストアは正しい方ではない</h3>
         </div>
         <p>Acmeは、Postgresを使ったセッションからRedisへのマイグレーション途中です（<code>MIG-118</code>、3月から停滞中）。現在すべてのセッション書き込みは<code>SessionBridge.write()</code>を経由し、そこから<em>両方</em>、つまり<code>RedisSessionStore</code>と旧来の<code>pg_sessions</code>テーブルへ分配されます。マイグレーションは完了しないままなので、読み取りは今もPostgresから行われます。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>「session」でgrepすると最初に<code>RedisSessionStore</code>が出てきます。これが正式な実装に見えますし、最も新しいコードで、ドキュメントも一番充実しています。ここに直接書き込むと、開発環境ではログインが動いているように見え（開発ではRedisの読み取りが有効なため）、本番では読み取りが今もPostgresを見るため静かに失敗します。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>「session」でgrepすると最初に<code>RedisSessionStore</code>が出てきます。これが正式な実装に見えますし、最も新しいコードで、ドキュメントも一番充実しています。ここに直接書き込むと、開発環境ではログインが動いているように見え（開発ではRedisの読み取りが有効なため）、本番では読み取りが今もPostgresを見るため静かに失敗します。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-1">新しいプロバイダのセッションを作成するときは、すべてSessionBridge経由にしてください。RedisSessionStoreやpg_sessionsに直接書き込まないでください。セッションのコードを書き始める前に、MIG-118の読み取り/書き込みの分離について説明してください。</div>
           <button class="copy-btn" data-copy-target="chip-1">コピー</button>
@@ -512,7 +512,7 @@
           <h3 class="bs-title">SAMLプロバイダは、いかにも手本に見えて、実は認証ミドルウェアを迂回している</h3>
         </div>
         <p>SAML以外のすべてのプロバイダは<code>authPipeline</code>の配下にマウントされ、そこでレート制限、監査ログ、デバイス信頼チェックが実行されます。<code>saml/handler.ts</code>はACSエンドポイントをルーターに直接マウントしています。SP起点のPOSTコールバックが2024年にCSRF層を壊してしまい、誰も後で戻さなかったからです。14か月前の<code>// TODO(priya): fold back into pipeline</code>が今も残っています。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>SAMLは最も最近追加されたプロバイダなので、コピー元として選びたくなる自然なファイルです。これをコピーすると、新しいプロバイダはレート制限も監査証跡もない状態で出荷されます。しかもどのテストも失敗しません。契約テストはミドルウェアの有無を検証していないからです。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>SAMLは最も最近追加されたプロバイダなので、コピー元として選びたくなる自然なファイルです。これをコピーすると、新しいプロバイダはレート制限も監査証跡もない状態で出荷されます。しかもどのテストも失敗しません。契約テストはミドルウェアの有無を検証していないからです。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-2">構造の手本にはsaml/handler.tsではなくoauth/google.tsを使ってください。SAMLは意図的にauthPipelineを迂回しています。新しいプロバイダのルートがauthPipeline内にマウントされていることを確認し、そのマウント地点を見せてください。</div>
           <button class="copy-btn" data-copy-target="chip-2">コピー</button>
@@ -527,7 +527,7 @@
           <h3 class="bs-title">これはすでに誰かが試みていて、今も有効な理由で差し戻された</h3>
         </div>
         <p>PR&nbsp;#2841（「Okta OIDCプロバイダを追加」、2025年9月）はマージされましたが、9日後に差し戻されました。差し戻しコミットがその理由を説明しています。Acmeのコールバックリダイレクトのラウンドトリップを越えてもワークスペースに紐づく招待リンクが生き残るよう、コールバックURLはテナントのサフィックスを持たなければなりません（<code>/auth/callback/:provider/:workspaceSlug</code>）。Oktaの厳格なリダイレクトURIの一致判定はこの動的なサフィックスを拒否し、招待されたユーザーは間違ったワークスペースに着地しました。全員が合意した修正案は、<code>AUTH_STATE_SECRET</code>で署名したstateパラメータにワークスペースのクレームを載せる方式でした。差し戻しのスレッドで設計されましたが、実装はされませんでした。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>現在のコードにはこれを示唆するものが何もありません。あなたは#2841のアプローチを再実装し、ローカルのテスト（単一ワークスペースの開発環境）をすべて通過し、招待されたユーザーが初めてサインインした瞬間に本番でこのバグを再発見することになります。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>現在のコードにはこれを示唆するものが何もありません。あなたは#2841のアプローチを再実装し、ローカルのテスト（単一ワークスペースの開発環境）をすべて通過し、招待されたユーザーが初めてサインインした瞬間に本番でこのバグを再発見することになります。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-3">まずPR #2841の差し戻しを読んでください。テナントのサフィックス付きコールバックURLではなく、そこで提案されている署名付きstateパラメータのワークスペースクレームを実装し、ワークスペースに紐づく招待フローのテストを追加してください。</div>
           <button class="copy-btn" data-copy-target="chip-3">コピー</button>
@@ -542,7 +542,7 @@
           <h3 class="bs-title">アイデンティティとアカウントは別物である。しかもプロバイダインターフェースはそれを隠している</h3>
         </div>
         <p>Acmeは<code>users</code>と<code>identities</code>を分けています。1つのアカウントに複数のアイデンティティ（メール+パスワード、Google、SAML）を連携でき、それらは<code>identities</code>テーブルで結び付けられます。プロバイダインターフェースはプロフィールを返すだけで、連携の判断は<code>identity/linker.ts</code>で検証済みメールをキーに行われます。検証済みメールを保証できないプロバイダ（多くのSSOのIdPは保証できません）は、<code>requiresManualLink: true</code>を設定しなければなりません。そうしないと、企業の共通エイリアスを共有する別々の2人を、linkerが平然と統合してしまいます。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>インターフェースを素直に実装すると、すべて動きます。ある顧客のIdPが未検証または再割り当てされたメールを送ってくるまでは。そのとき、あなたのプロバイダは既存のアカウントに赤の他人のアイデンティティを静かに紐づけてしまいます。これはログインのバグではなく、アカウント乗っ取りのバグです。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>インターフェースを素直に実装すると、すべて動きます。ある顧客のIdPが未検証または再割り当てされたメールを送ってくるまでは。そのとき、あなたのプロバイダは既存のアカウントに赤の他人のアイデンティティを静かに紐づけてしまいます。これはログインのバグではなく、アカウント乗っ取りのバグです。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-4">実装する前にidentity/linker.tsを順を追って説明してください。このIdPが検証済みメールを保証するかどうかを明示的に判断し、保証しないならrequiresManualLinkを設定して手動連携の確認フローを作ってください。</div>
           <button class="copy-btn" data-copy-target="chip-4">コピー</button>
@@ -557,7 +557,7 @@
           <h3 class="bs-title">トークンのリフレッシュはフラグの背後にあり、開発ではオン、本番ではオフになっている</h3>
         </div>
         <p>リフレッシュトークンのローテーションは<code>flags.yaml</code>の<code>auth.refresh_rotation</code>で制御されています。開発とステージングでは既定で<code>true</code>、本番では<code>false</code>です（5月のクロックスキューのインシデント後に一時停止されたロールアウトのためです）。フラグがオフの本番では、セッションはちょうど<code>ACCESS_TOKEN_TTL</code>（12時間）だけ生存し、その後は完全に失効します。リフレッシュの経路は存在しません。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>あなたが書くリフレッシュ処理はどれも開発環境の挙動でテストされ、本番では死んだコードになります。さらに悪いことに、プロバイダがリフレッシュを前提にしていると、本番ユーザーは12時間ごとにセッション中でログアウトされ、バグ報告には「SSOがランダムにログアウトさせてくる」と書かれ、あなたのコードが疑われます。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>あなたが書くリフレッシュ処理はどれも開発環境の挙動でテストされ、本番では死んだコードになります。さらに悪いことに、プロバイダがリフレッシュを前提にしていると、本番ユーザーは12時間ごとにセッション中でログアウトされ、バグ報告には「SSOがランダムにログアウトさせてくる」と書かれ、あなたのコードが疑われます。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-5">auth.refresh_rotation=false（本番の実態）を前提に実装してください。プロバイダを12時間で完全失効する挙動で動くようにし、ローテーションのロールアウトが再開した場合に何が変わるかは別途書き添えてください。</div>
           <button class="copy-btn" data-copy-target="chip-5">コピー</button>
@@ -572,7 +572,7 @@
           <h3 class="bs-title">プロバイダの登録には3つの手順があり、そのうち2つしか見つけられない</h3>
         </div>
         <p>プロバイダはコンパイルが通っても稼働状態にはなりません。（1）&nbsp;<code>providers/registry.ts</code>に登録し、（2）&nbsp;マイグレーションで<code>auth_providers</code>テーブルに挿入し（管理UIはレジストリではなくDBを読むためです）、（3）&nbsp;<code>__tests__/provider-contract.spec.ts</code>のフィクスチャ一覧に追加する必要があります。このテストは、登録済みの全プロバイダに対して共通の契約スイート（state検証、リプレイ防止、ログアウトのファンアウト）を実行します。レジストリとフィクスチャ一覧が食い違うとCIが失敗します。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>マイグレーションを飛ばすと、プロバイダはコンパイルが通り、テストも通り、それでいてどのワークスペースのSSO設定にも一切現れません。すでに2人のエンジニアがそれぞれ半日を無駄にしています。どのドキュメントにも書かれていないのです。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>マイグレーションを飛ばすと、プロバイダはコンパイルが通り、テストも通り、それでいてどのワークスペースのSSO設定にも一切現れません。すでに2人のエンジニアがそれぞれ半日を無駄にしています。どのドキュメントにも書かれていないのです。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-6">登録の3手順をすべて実施してください。registry.ts、auth_providersのマイグレーション、provider-contractのフィクスチャ一覧です。完了とする前に、新しいプロバイダで契約スイートが通ることを見せてください。</div>
           <button class="copy-btn" data-copy-target="chip-6">コピー</button>
@@ -587,7 +587,7 @@
           <h3 class="bs-title">ログアウトは関数呼び出しではなくイベントであり、レビュープレーヤーがそれを購読している</h3>
         </div>
         <p>セッションの取り消しは、内部のイベントバスに<code>auth.session.revoked</code>を発行します。リアルタイムのレビュープレーヤーは、それ自身が長寿命の再生権限を保持していて、そのイベントを受け取ったときにだけ権限を解放します。<code>logout.ts</code>は既存プロバイダについてこれを処理しますが、SSOのシングルログアウト（SLO）のコールバックは別の経路で到着するため、自らこのイベントを発行しなければなりません。</p>
-        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>イベントを取りこぼすと、ログアウトは「動く」ように見えます。セッションの行は消えます。しかしレビュータブを開いたままの人は、権限のTTLが切れる（最大24時間）まで非公開の動画に完全な再生アクセスを持ち続けます。レビューのワークフローをスタジオに販売している会社にとって、これはバグではなくセキュリティインシデントです。</span></div>
+        <div class="bite"><span class="bite-tag">どこでハマるか</span><span>イベントを取りこぼすと、ログアウトは「動く」ように見えます。セッションの行は消えます。しかしレビュータブを開いたままの人は、権限のTTLが切れる（最大24時間）まで非公開の動画に完全な再生アクセスを持ち続けます。レビューのワークフローをスタジオに販売している会社にとって、これはバグではなくセキュリティインシデントです。</span></div>
         <div class="chip-row">
           <div class="prompt-chip" id="chip-7">SLOに対応してください。新しいプロバイダのあらゆる取り消し経路はauth.session.revokedを発行しなければなりません。IdP起点のログアウトでレビュープレーヤーの権限が解放されることを検証するテストを追加してください。</div>
           <button class="copy-btn" data-copy-target="chip-7">コピー</button>
@@ -635,7 +635,7 @@ stateクレーム → 登録 → SLO + イベント → 契約テスト。説明
     </div>
   </div>
 
-  <footer><a href="index.html">自分の「知らないこと」を知る</a>の一部です。ブログ記事の補足となる例です。</footer>
+  <footer><a href="index.html">わからないことを知る</a>の一部です。ブログ記事の補足となる例です。</footer>
 </div>
 
 <script>
