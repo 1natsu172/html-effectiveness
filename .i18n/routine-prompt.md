@@ -11,7 +11,9 @@
 - 翻訳ポリシーと用語集（`.i18n/glossary.md`）に必ず従う。用語集の「訳文の作法」も厳守する。
 
 ## 手順
-1. `git fetch upstream` を実行する。
+1. `upstream` リモートを用意して fetch する。**クラウドの新規cloneには `origin` しか無い**ため、無ければ追加すること。
+   - `git remote get-url upstream >/dev/null 2>&1 || git remote add upstream https://github.com/ThariqS/html-effectiveness.git`
+   - `git fetch upstream`
 2. `git merge upstream/main`（対象は `main`）を実行する。
    - ルート英語は無改変のため通常はクリーンに通る。**クリーンにマージできない場合は直ちに中止**し、pushせず、
      状況を通知して終了する（異常事態。手動介入が必要）。
