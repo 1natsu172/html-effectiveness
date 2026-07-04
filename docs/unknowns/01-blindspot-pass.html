@@ -1,0 +1,680 @@
+<!-- Copyright 2026 Anthropic PBC · SPDX-License-Identifier: Apache-2.0 -->
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ブラインドスポット確認 — 自分の未知を知る</title>
+<style>
+  :root {
+    --ivory:  #FAF9F5;
+    --paper:  #FFFFFF;
+    --slate:  #141413;
+    --clay:   #D97757;
+    --clay-d: #B85C3E;
+    --oat:    #E3DACC;
+    --olive:  #788C5D;
+    --g100:   #F0EEE6;
+    --g200:   #E6E3DA;
+    --g300:   #D1CFC5;
+    --g500:   #87867F;
+    --g700:   #3D3D3A;
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--ivory);
+    color: var(--slate);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 100px; }
+
+  /* ── page header ─────────────────────── */
+  header.page-head {
+    padding: 56px 0 8px;
+    position: relative;
+  }
+  .head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 24px; height: 1.5px;
+    background: var(--clay);
+    flex: none;
+  }
+  a.back {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--g500);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  a.back:hover { color: var(--clay); }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(32px, 5vw, 46px);
+    line-height: 1.08;
+    letter-spacing: -0.018em;
+    margin: 18px 0 10px;
+  }
+  .lede {
+    font-size: 16px;
+    color: var(--g700);
+    max-width: 640px;
+    margin: 0 0 28px;
+  }
+
+  /* ── prompt box ──────────────────────── */
+  .prompt-card {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 14px;
+    padding: 22px 26px 24px;
+    position: relative;
+  }
+  .prompt-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  blockquote.prompt {
+    margin: 0;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17.5px;
+    line-height: 1.55;
+    color: var(--slate);
+    border-left: 3px solid var(--oat);
+    padding-left: 18px;
+  }
+  button.copy-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--g700);
+    background: var(--g100);
+    border: 1.5px solid var(--g300);
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color 120ms, color 120ms, background 120ms;
+    white-space: nowrap;
+  }
+  button.copy-btn:hover { border-color: var(--clay); color: var(--clay-d); }
+  button.copy-btn.copied {
+    background: var(--olive);
+    border-color: var(--olive);
+    color: var(--paper);
+  }
+
+  /* ── divider ─────────────────────────── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 44px 0 32px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--g500);
+    white-space: nowrap;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1.5px;
+    background: var(--g300);
+  }
+
+  /* ── artifact frame ──────────────────── */
+  .artifact {
+    background: var(--paper);
+    border: 1.5px solid var(--g300);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .artifact-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-bottom: 1.5px solid var(--g200);
+    background: var(--g100);
+  }
+  .artifact-bar .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--g300); }
+  .artifact-bar .file {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--g500);
+    margin-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .artifact-body { padding: 34px 34px 40px; }
+  @media (max-width: 560px) { .artifact-body { padding: 24px 18px 30px; } }
+
+  .artifact-body h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 27px;
+    letter-spacing: -0.014em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+  }
+  .artifact-body .sub {
+    font-size: 14px;
+    color: var(--g500);
+    margin: 0 0 24px;
+  }
+  .artifact-body .sub code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--g100);
+    border: 1px solid var(--g200);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--g700);
+  }
+
+  /* asked vs walking into */
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 34px;
+  }
+  @media (max-width: 640px) { .vs-grid { grid-template-columns: 1fr; } }
+  .vs-cell {
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: var(--ivory);
+  }
+  .vs-cell.actual { border-color: var(--clay); background: #FBF3EF; }
+  .vs-cell .vs-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    margin-bottom: 8px;
+  }
+  .vs-cell.actual .vs-tag { color: var(--clay-d); }
+  .vs-cell p { margin: 0; font-size: 14px; color: var(--g700); }
+  .vs-cell p strong { color: var(--slate); }
+
+  /* stat strip */
+  .stat-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+    padding: 14px 18px;
+    border: 1.5px solid var(--g200);
+    border-radius: 12px;
+    background: var(--g100);
+    margin-bottom: 36px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--g700);
+  }
+  .stat-strip b { color: var(--slate); font-weight: 600; }
+  .stat-strip .warn b { color: var(--clay-d); }
+
+  /* section labels inside artifact */
+  .art-eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--g500);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+  }
+  .art-eyebrow::before {
+    content: "";
+    width: 24px; height: 1.5px;
+    background: var(--clay);
+    flex: none;
+  }
+
+  /* blindspot cards */
+  .bs-card {
+    border: 1.5px solid var(--g300);
+    border-radius: 12px;
+    background: var(--paper);
+    padding: 20px 22px 18px;
+    margin-bottom: 16px;
+  }
+  .bs-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1.5px solid;
+    white-space: nowrap;
+  }
+  .badge.landmine { color: var(--clay-d); border-color: var(--clay); background: #FBF0EA; }
+  .badge.history { color: #8A6A3B; border-color: #C9B48E; background: var(--oat); }
+  .badge.convention { color: var(--g700); border-color: var(--g300); background: var(--g100); }
+  .badge.concept { color: #55663F; border-color: var(--olive); background: #EFF2E9; }
+  .bs-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--g500);
+  }
+  .bs-title {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18.5px;
+    letter-spacing: -0.01em;
+    color: var(--slate);
+    margin: 0;
+    flex: 1 1 100%;
+  }
+  .bs-card p { font-size: 14px; color: var(--g700); margin: 0 0 10px; }
+  .bs-card p:last-of-type { margin-bottom: 0; }
+  .bs-card code, .bite code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--g100);
+    border: 1px solid var(--g200);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--g700);
+    word-break: break-word;
+  }
+  .bite {
+    display: flex;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--g700);
+    background: var(--ivory);
+    border-left: 3px solid var(--clay);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin: 12px 0;
+  }
+  .bite .bite-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--clay-d);
+    flex: none;
+    padding-top: 2px;
+  }
+
+  /* prompt chips */
+  .chip-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .prompt-chip {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--slate);
+    background: var(--g100);
+    border: 1.5px solid var(--g300);
+    border-radius: 9px;
+    padding: 10px 13px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt-chip::before {
+    content: "› ";
+    color: var(--clay);
+    font-weight: 600;
+  }
+  .chip-row button.copy-btn { align-self: flex-start; margin-top: 2px; }
+  @media (max-width: 480px) {
+    .chip-row { flex-direction: column; }
+    .chip-row button.copy-btn { align-self: flex-end; margin-top: 0; }
+  }
+
+  /* improved prompt card */
+  .final-card {
+    border: 1.5px solid var(--slate);
+    border-radius: 14px;
+    background: var(--paper);
+    padding: 24px 26px 26px;
+    margin-top: 38px;
+    box-shadow: 0 10px 28px rgba(20,20,19,.07);
+  }
+  .final-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .final-head .art-eyebrow { margin: 0; color: var(--clay-d); }
+  .final-card h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: -0.012em;
+    margin: 8px 0 14px;
+  }
+  .final-prompt {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--slate);
+    background: var(--ivory);
+    border: 1.5px solid var(--g200);
+    border-radius: 10px;
+    padding: 18px 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+    overflow-x: auto;
+  }
+  .final-note {
+    font-size: 13px;
+    color: var(--g500);
+    margin: 14px 0 0;
+  }
+
+  /* footer */
+  footer {
+    margin-top: 56px;
+    padding-top: 22px;
+    border-top: 1.5px solid var(--g200);
+    font-size: 13px;
+    color: var(--g500);
+  }
+  footer a { color: var(--clay); text-decoration-color: var(--oat); text-underline-offset: 3px; }
+  footer a:hover { text-decoration-color: var(--clay); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div class="head-row">
+      <div class="eyebrow">自分の未知を知る · 実装前</div>
+      <a class="back" href="index.html">&larr; すべての例</a>
+    </div>
+    <h1>ブラインドスポット確認</h1>
+    <p class="lede">馴染みのないコードに手を付ける前に、自分が「知らないことすら知らない」ポイントをClaudeに洗い出してもらいましょう。そして、それぞれの空白をどうプロンプトで埋めればよいかも教えてもらいます。</p>
+
+    <div class="prompt-card">
+      <div class="prompt-label">
+        <span>プロンプト</span>
+        <button class="copy-btn" data-copy-target="user-prompt">プロンプトをコピー</button>
+      </div>
+      <blockquote class="prompt" id="user-prompt">Acmeに新しいSSO認証プロバイダを追加しようとしていますが、私は認証モジュールを一度も触ったことがありません。ブラインドスポット確認をしてください。このコードベースの該当部分で私の「知らないことすら知らない」ものを見つけ、それぞれを説明し、実装に向けてどうプロンプトを書けばよいかを教えてください。</blockquote>
+    </div>
+  </header>
+
+  <div class="divider">Claudeが生成したもの</div>
+
+  <div class="artifact">
+    <div class="artifact-bar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="file">blindspot-pass · acme/services/auth · 47 files scanned</span>
+    </div>
+    <div class="artifact-body">
+
+      <h2>知らないことすら知らないもの: Acmeの認証モジュール</h2>
+      <p class="sub"><code>services/auth/</code>（47ファイル）、2025年1月以降にそこへ触れた214件のコミット、進行中の3件のマイグレーション、差し戻された2回の試みをスキャンしました。痛い目に遭って初めて学んだであろう7つを挙げます。</p>
+
+      <div class="vs-grid">
+        <div class="vs-cell">
+          <div class="vs-tag">あなたが依頼したこと</div>
+          <p>「新しいSSOプロバイダを追加する」。これはこう聞こえます。インターフェースを実装し、登録し、リダイレクトハンドラを書けば完了、と。きれいなコードベースなら2日で終わる作業です。</p>
+        </div>
+        <div class="vs-cell actual">
+          <div class="vs-tag">実際に足を踏み入れる先</div>
+          <p>このモジュールは<strong>セッションストレージのマイグレーション途中</strong>で、<strong>誰もが動いていると思い込んでいるミドルウェアを、こっそり迂回するプロバイダが1つ</strong>あり、<strong>まさにこの作業を過去に試みて差し戻された痕跡</strong>があり、さらに<strong>プロバイダインターフェースからはまったく見えないアイデンティティ連携モデル</strong>を抱えています。</p>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <span class="warn"><b>4</b> 件の地雷</span>
+        <span><b>2</b> 件の暗黙の慣習</span>
+        <span><b>1</b> 件の欠けている概念</span>
+        <span><b>1</b> 件のまさに同じ作業での差し戻し（PR&nbsp;#2841）</span>
+      </div>
+
+      <div class="art-eyebrow">ブラインドスポット一覧</div>
+
+      <!-- 1 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge landmine">地雷</span>
+          <span class="bs-num">01</span>
+          <h3 class="bs-title">セッションは二重に書き込まれる。最初に見つかるRedisストアは正しい方ではない</h3>
+        </div>
+        <p>Acmeは、Postgresを使ったセッションからRedisへのマイグレーション途中です（<code>MIG-118</code>、3月から停滞中）。現在すべてのセッション書き込みは<code>SessionBridge.write()</code>を経由し、そこから<em>両方</em>、つまり<code>RedisSessionStore</code>と旧来の<code>pg_sessions</code>テーブルへ分配されます。マイグレーションは完了しないままなので、読み取りは今もPostgresから行われます。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>「session」でgrepすると最初に<code>RedisSessionStore</code>が出てきます。これが正式な実装に見えますし、最も新しいコードで、ドキュメントも一番充実しています。ここに直接書き込むと、開発環境ではログインが動いているように見え（開発ではRedisの読み取りが有効なため）、本番では読み取りが今もPostgresを見るため静かに失敗します。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-1">新しいプロバイダのセッションを作成するときは、すべてSessionBridge経由にしてください。RedisSessionStoreやpg_sessionsに直接書き込まないでください。セッションのコードを書き始める前に、MIG-118の読み取り/書き込みの分離について説明してください。</div>
+          <button class="copy-btn" data-copy-target="chip-1">コピー</button>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge landmine">地雷</span>
+          <span class="bs-num">02</span>
+          <h3 class="bs-title">SAMLプロバイダは、いかにも手本に見えて、実は認証ミドルウェアを迂回している</h3>
+        </div>
+        <p>SAML以外のすべてのプロバイダは<code>authPipeline</code>の配下にマウントされ、そこでレート制限、監査ログ、デバイス信頼チェックが実行されます。<code>saml/handler.ts</code>はACSエンドポイントをルーターに直接マウントしています。SP起点のPOSTコールバックが2024年にCSRF層を壊してしまい、誰も後で戻さなかったからです。14か月前の<code>// TODO(priya): fold back into pipeline</code>が今も残っています。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>SAMLは最も最近追加されたプロバイダなので、コピー元として選びたくなる自然なファイルです。これをコピーすると、新しいプロバイダはレート制限も監査証跡もない状態で出荷されます。しかもどのテストも失敗しません。契約テストはミドルウェアの有無を検証していないからです。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-2">構造の手本にはsaml/handler.tsではなくoauth/google.tsを使ってください。SAMLは意図的にauthPipelineを迂回しています。新しいプロバイダのルートがauthPipeline内にマウントされていることを確認し、そのマウント地点を見せてください。</div>
+          <button class="copy-btn" data-copy-target="chip-2">コピー</button>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge history">履歴</span>
+          <span class="bs-num">03</span>
+          <h3 class="bs-title">これはすでに誰かが試みていて、今も有効な理由で差し戻された</h3>
+        </div>
+        <p>PR&nbsp;#2841（「Okta OIDCプロバイダを追加」、2025年9月）はマージされましたが、9日後に差し戻されました。差し戻しコミットがその理由を説明しています。Acmeのコールバックリダイレクトのラウンドトリップを越えてもワークスペースに紐づく招待リンクが生き残るよう、コールバックURLはテナントのサフィックスを持たなければなりません（<code>/auth/callback/:provider/:workspaceSlug</code>）。Oktaの厳格なリダイレクトURIの一致判定はこの動的なサフィックスを拒否し、招待されたユーザーは間違ったワークスペースに着地しました。全員が合意した修正案は、<code>AUTH_STATE_SECRET</code>で署名したstateパラメータにワークスペースのクレームを載せる方式でした。差し戻しのスレッドで設計されましたが、実装はされませんでした。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>現在のコードにはこれを示唆するものが何もありません。あなたは#2841のアプローチを再実装し、ローカルのテスト（単一ワークスペースの開発環境）をすべて通過し、招待されたユーザーが初めてサインインした瞬間に本番でこのバグを再発見することになります。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-3">まずPR #2841の差し戻しを読んでください。テナントのサフィックス付きコールバックURLではなく、そこで提案されている署名付きstateパラメータのワークスペースクレームを実装し、ワークスペースに紐づく招待フローのテストを追加してください。</div>
+          <button class="copy-btn" data-copy-target="chip-3">コピー</button>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge concept">欠けている概念</span>
+          <span class="bs-num">04</span>
+          <h3 class="bs-title">アイデンティティとアカウントは別物である。しかもプロバイダインターフェースはそれを隠している</h3>
+        </div>
+        <p>Acmeは<code>users</code>と<code>identities</code>を分けています。1つのアカウントに複数のアイデンティティ（メール+パスワード、Google、SAML）を連携でき、それらは<code>identities</code>テーブルで結び付けられます。プロバイダインターフェースはプロフィールを返すだけで、連携の判断は<code>identity/linker.ts</code>で検証済みメールをキーに行われます。検証済みメールを保証できないプロバイダ（多くのSSOのIdPは保証できません）は、<code>requiresManualLink: true</code>を設定しなければなりません。そうしないと、企業の共通エイリアスを共有する別々の2人を、linkerが平然と統合してしまいます。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>インターフェースを素直に実装すると、すべて動きます。ある顧客のIdPが未検証または再割り当てされたメールを送ってくるまでは。そのとき、あなたのプロバイダは既存のアカウントに赤の他人のアイデンティティを静かに紐づけてしまいます。これはログインのバグではなく、アカウント乗っ取りのバグです。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-4">実装する前にidentity/linker.tsを順を追って説明してください。このIdPが検証済みメールを保証するかどうかを明示的に判断し、保証しないならrequiresManualLinkを設定して手動連携の確認フローを作ってください。</div>
+          <button class="copy-btn" data-copy-target="chip-4">コピー</button>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge landmine">地雷</span>
+          <span class="bs-num">05</span>
+          <h3 class="bs-title">トークンのリフレッシュはフラグの背後にあり、開発ではオン、本番ではオフになっている</h3>
+        </div>
+        <p>リフレッシュトークンのローテーションは<code>flags.yaml</code>の<code>auth.refresh_rotation</code>で制御されています。開発とステージングでは既定で<code>true</code>、本番では<code>false</code>です（5月のクロックスキューのインシデント後に一時停止されたロールアウトのためです）。フラグがオフの本番では、セッションはちょうど<code>ACCESS_TOKEN_TTL</code>（12時間）だけ生存し、その後は完全に失効します。リフレッシュの経路は存在しません。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>あなたが書くリフレッシュ処理はどれも開発環境の挙動でテストされ、本番では死んだコードになります。さらに悪いことに、プロバイダがリフレッシュを前提にしていると、本番ユーザーは12時間ごとにセッション中でログアウトされ、バグ報告には「SSOがランダムにログアウトさせてくる」と書かれ、あなたのコードが疑われます。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-5">auth.refresh_rotation=false（本番の実態）を前提に実装してください。プロバイダを12時間で完全失効する挙動で動くようにし、ローテーションのロールアウトが再開した場合に何が変わるかは別途書き添えてください。</div>
+          <button class="copy-btn" data-copy-target="chip-5">コピー</button>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge convention">慣習</span>
+          <span class="bs-num">06</span>
+          <h3 class="bs-title">プロバイダの登録には3つの手順があり、そのうち2つしか見つけられない</h3>
+        </div>
+        <p>プロバイダはコンパイルが通っても稼働状態にはなりません。（1）&nbsp;<code>providers/registry.ts</code>に登録し、（2）&nbsp;マイグレーションで<code>auth_providers</code>テーブルに挿入し（管理UIはレジストリではなくDBを読むためです）、（3）&nbsp;<code>__tests__/provider-contract.spec.ts</code>のフィクスチャ一覧に追加する必要があります。このテストは、登録済みの全プロバイダに対して共通の契約スイート（state検証、リプレイ防止、ログアウトのファンアウト）を実行します。レジストリとフィクスチャ一覧が食い違うとCIが失敗します。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>マイグレーションを飛ばすと、プロバイダはコンパイルが通り、テストも通り、それでいてどのワークスペースのSSO設定にも一切現れません。すでに2人のエンジニアがそれぞれ半日を無駄にしています。どのドキュメントにも書かれていないのです。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-6">登録の3手順をすべて実施してください。registry.ts、auth_providersのマイグレーション、provider-contractのフィクスチャ一覧です。完了とする前に、新しいプロバイダで契約スイートが通ることを見せてください。</div>
+          <button class="copy-btn" data-copy-target="chip-6">コピー</button>
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="bs-card">
+        <div class="bs-head">
+          <span class="badge landmine">地雷</span>
+          <span class="bs-num">07</span>
+          <h3 class="bs-title">ログアウトは関数呼び出しではなくイベントであり、レビュープレーヤーがそれを購読している</h3>
+        </div>
+        <p>セッションの取り消しは、内部のイベントバスに<code>auth.session.revoked</code>を発行します。リアルタイムのレビュープレーヤーは、それ自身が長寿命の再生権限を保持していて、そのイベントを受け取ったときにだけ権限を解放します。<code>logout.ts</code>は既存プロバイダについてこれを処理しますが、SSOのシングルログアウト（SLO）のコールバックは別の経路で到着するため、自らこのイベントを発行しなければなりません。</p>
+        <div class="bite"><span class="bite-tag">なぜ痛いか</span><span>イベントを取りこぼすと、ログアウトは「動く」ように見えます。セッションの行は消えます。しかしレビュータブを開いたままの人は、権限のTTLが切れる（最大24時間）まで非公開の動画に完全な再生アクセスを持ち続けます。レビューのワークフローをスタジオに販売している会社にとって、これはバグではなくセキュリティインシデントです。</span></div>
+        <div class="chip-row">
+          <div class="prompt-chip" id="chip-7">SLOに対応してください。新しいプロバイダのあらゆる取り消し経路はauth.session.revokedを発行しなければなりません。IdP起点のログアウトでレビュープレーヤーの権限が解放されることを検証するテストを追加してください。</div>
+          <button class="copy-btn" data-copy-target="chip-7">コピー</button>
+        </div>
+      </div>
+
+      <!-- final -->
+      <div class="final-card">
+        <div class="final-head">
+          <div class="art-eyebrow">改良後のプロンプト</div>
+          <button class="copy-btn" data-copy-target="final-prompt">プロンプトをコピー</button>
+        </div>
+        <h3>ここまでの内容をすべて折り込んだ、本来あなたが私に渡すべきプロンプト</h3>
+        <pre class="final-prompt" id="final-prompt">Acmeに新しいSSO認証プロバイダを追加してください。ブラインドスポット確認から得られた制約は次のとおりです。
+
+1. セッション: すべてのセッション書き込みをSessionBridge経由にする
+   （MIG-118は未完了で、本番は今もpg_sessionsから読む）。
+   RedisSessionStoreに直接触れないこと。
+2. 手本: 構造はoauth/google.tsを基にし、saml/handler.tsは使わない。
+   SAMLはauthPipelineを迂回している。新しいルートはすべてauthPipeline内に
+   マウントし、そのマウント地点を見せること。
+3. 履歴: まずPR #2841の差し戻しを読む。テナントのサフィックス付き
+   コールバックURLではなく、署名付きstateパラメータのワークスペース
+   クレーム（AUTH_STATE_SECRET）を実装し、ワークスペース招待フローを
+   テストする。
+4. アイデンティティ連携: コーディング前にidentity/linker.tsを順を追って
+   説明する。このIdPが検証済みメールを保証しないなら、
+   requiresManualLinkを設定して確認フローを作る。自動連携はしない。
+5. フラグ: auth.refresh_rotation=false（本番）を前提に実装する。
+   セッションは12時間で完全失効し、リフレッシュ経路はない。
+   ローテーションが出荷された場合に何が変わるかを書き添える。
+6. 登録: 3手順すべて。providers/registry.ts、auth_providersの
+   マイグレーション、provider-contractのフィクスチャ一覧。
+   契約スイートがグリーンになるのを見せる。
+7. ログアウト: あらゆる取り消し経路がauth.session.revokedを発行すること。
+   IdP起点のログアウトでレビュープレーヤーの再生権限が解放されることを
+   検証するテストを追加する。
+
+作業はこの順で進めること: linkerの説明 → プロバイダの骨組み → コールバック +
+stateクレーム → 登録 → SLO + イベント → 契約テスト。説明の後、コードを
+書く前にいったん止まって計画を見せること。</pre>
+        <p class="final-note">今朝のあなたには書けなかった7つの文。そのどれもが、誰かの半日と引き換えに得られたものです。それこそがこの確認の目的です。</p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer><a href="index.html">自分の「知らないこと」を知る</a>の一部です。ブログ記事の補足となる例です。</footer>
+</div>
+
+<script>
+(function () {
+  function copyText(text, btn) {
+    function done() {
+      var prev = btn.textContent;
+      btn.textContent = "Copied";
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.textContent = prev;
+        btn.classList.remove("copied");
+      }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
+    } else {
+      fallback(text);
+      done();
+    }
+  }
+  function fallback(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-copy-target]");
+    if (!btn) return;
+    var el = document.getElementById(btn.getAttribute("data-copy-target"));
+    if (!el) return;
+    copyText(el.textContent.trim(), btn);
+  });
+})();
+</script>
+</body>
+</html>
